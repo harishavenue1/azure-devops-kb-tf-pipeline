@@ -4,6 +4,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.net.*;
 
 public class TriggerAzureDevOpsPipeline {
 
@@ -12,8 +13,17 @@ public class TriggerAzureDevOpsPipeline {
         String project = "your-project";
         String pipelineId = "your-pipeline-id";
         String personalAccessToken = "your-personal-access-token";
+        String proxyHost = "your-proxy-host";
+        int proxyPort = 8080; // Change this to your proxy port
 
         try {
+            // Set the proxy system properties
+            System.setProperty("http.proxyHost", proxyHost);
+            System.setProperty("http.proxyPort", String.valueOf(proxyPort));
+            System.setProperty("https.proxyHost", proxyHost);
+            System.setProperty("https.proxyPort", String.valueOf(proxyPort));
+
+            // Trigger the pipeline
             triggerPipeline(organization, project, pipelineId, personalAccessToken);
         } catch (Exception e) {
             e.printStackTrace();
@@ -26,7 +36,9 @@ public class TriggerAzureDevOpsPipeline {
         // JSON payload for the request body
         String requestBody = "{}"; // Replace this with your actual JSON payload
 
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder()
+                .proxy(ProxySelector.getDefault())  // Use the default proxy selector
+                .build();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
