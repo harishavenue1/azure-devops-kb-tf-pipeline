@@ -1,7 +1,5 @@
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.*;
+import java.util.List;
 
 public class TriggerAzureDevOpsPipeline {
 
@@ -10,8 +8,17 @@ public class TriggerAzureDevOpsPipeline {
         String project = "your-project";
         String pipelineId = "your-pipeline-id";
         String personalAccessToken = "your-personal-access-token";
+        String proxyHost = "your-proxy-host";
+        int proxyPort = 8080; // Change this to your proxy port
 
         try {
+            // Set the proxy system properties
+            System.setProperty("http.proxyHost", proxyHost);
+            System.setProperty("http.proxyPort", String.valueOf(proxyPort));
+            System.setProperty("https.proxyHost", proxyHost);
+            System.setProperty("https.proxyPort", String.valueOf(proxyPort));
+
+            // Trigger the pipeline
             triggerPipeline(organization, project, pipelineId, personalAccessToken);
         } catch (Exception e) {
             e.printStackTrace();
@@ -19,9 +26,11 @@ public class TriggerAzureDevOpsPipeline {
     }
 
     private static void triggerPipeline(String organization, String project, String pipelineId, String personalAccessToken) throws Exception {
-        String apiUrl = String.format("https://dev.azure.com/%s/%s/_apis/pipelines/%s/runs?api-version=6.0", organization, project, pipelineId);
+        // Rest of the code remains the same
 
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder()
+                .proxy(ProxySelector.getDefault())  // Use the default proxy selector
+                .build();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
@@ -32,11 +41,6 @@ public class TriggerAzureDevOpsPipeline {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() == 200) {
-            System.out.println("Pipeline triggered successfully");
-        } else {
-            System.out.println("Failed to trigger pipeline. Status code: " + response.statusCode());
-            System.out.println("Response body: " + response.body());
-        }
+        // Rest of the code remains the same
     }
 }
